@@ -1,0 +1,224 @@
+[
+  {
+    "phase": "Baseline (Original)",
+    "results": {
+      "Random Forest": {
+        "MAE": 0.3568,
+        "RMSE": 0.4769
+      },
+      "SVR": {
+        "MAE": 0.3662,
+        "RMSE": 0.5745
+      },
+      "Reservoir Computing": {
+        "MAE": 0.2316,
+        "RMSE": 0.3162
+      },
+      "Gaussian Process": {
+        "MAE": 0.2403,
+        "RMSE": 0.3265
+      },
+      "MLP": {
+        "MAE": 0.2491,
+        "RMSE": 0.334
+      },
+      "LSTM": {
+        "MAE": 0.3732,
+        "RMSE": 0.4544
+      },
+      "Transformer": {
+        "MAE": 0.4155,
+        "RMSE": 0.4978
+      },
+      "PINN": {
+        "MAE": 0.3232,
+        "RMSE": 0.4069
+      }
+    },
+    "best_model": "Reservoir Computing",
+    "best_mae": 0.2316,
+    "best_rmse": 0.3162
+  },
+  {
+    "phase": "Phase 1: Architecture Improvements",
+    "changes": "Added dropout, early stopping, LR scheduling, ESN hyperparameter search, better PINN physics loss",
+    "results": {
+      "Random Forest": {
+        "MAE": 0.3525244057341707,
+        "RMSE": 0.47247617589330987
+      },
+      "SVR": {
+        "MAE": 0.39129023884301845,
+        "RMSE": 0.6250594189386607
+      },
+      "Reservoir Computing": {
+        "MAE": 0.2163439129910951,
+        "RMSE": 0.30786585972926805
+      },
+      "Gaussian Process": {
+        "MAE": 0.21053580512002015,
+        "RMSE": 0.3017611675939452
+      },
+      "MLP": {
+        "MAE": 0.5815131169969255,
+        "RMSE": 0.8379116962540967
+      },
+      "LSTM": {
+        "MAE": 0.4057808416813344,
+        "RMSE": 0.49646092062542996
+      },
+      "Transformer": {
+        "MAE": 0.2832281985774532,
+        "RMSE": 0.35831209754131316
+      },
+      "PINN": {
+        "MAE": 0.7288195630189057,
+        "RMSE": 0.972219038188934
+      }
+    },
+    "best_model": "Gaussian Process",
+    "best_mae": 0.21053580512002015,
+    "best_rmse": 0.3017611675939452
+  },
+  {
+    "phase": "Phase 2: Extended Window Sizes",
+    "changes": "Tested window sizes 7, 14, 21, 28 steps",
+    "window_results": {
+      "7": {
+        "ESN": {
+          "MAE": 0.2163439129910951,
+          "RMSE": 0.30786585972926805
+        },
+        "GPR": {
+          "MAE": 0.21649658118659934,
+          "RMSE": 0.3080816458904077
+        },
+        "LSTM": {
+          "MAE": 0.9713611620396108,
+          "RMSE": 1.0883881565332536
+        },
+        "Transformer": {
+          "MAE": 0.23049918801666383,
+          "RMSE": 0.32167836723843796
+        }
+      },
+      "14": {
+        "ESN": {
+          "MAE": 0.21273292209509012,
+          "RMSE": 0.3047211922937005
+        },
+        "GPR": {
+          "MAE": 0.2572796204857286,
+          "RMSE": 0.34943906056213536
+        },
+        "LSTM": {
+          "MAE": 1.1572551236315098,
+          "RMSE": 1.296875699767298
+        },
+        "Transformer": {
+          "MAE": 0.29053317406738294,
+          "RMSE": 0.3757323162813134
+        }
+      },
+      "21": {
+        "ESN": {
+          "MAE": 0.20666484755665276,
+          "RMSE": 0.2983876348624294
+        },
+        "GPR": {
+          "MAE": Infinity,
+          "RMSE": Infinity
+        },
+        "LSTM": {
+          "MAE": 0.8524836458977925,
+          "RMSE": 1.0014346558586138
+        },
+        "Transformer": {
+          "MAE": 0.25071730686224486,
+          "RMSE": 0.3372628523902793
+        }
+      },
+      "28": {
+        "ESN": {
+          "MAE": 0.21072135740014455,
+          "RMSE": 0.30248481202626154
+        },
+        "GPR": {
+          "MAE": Infinity,
+          "RMSE": Infinity
+        },
+        "LSTM": {
+          "MAE": 0.8997639034405426,
+          "RMSE": 1.0482662830902967
+        },
+        "Transformer": {
+          "MAE": Infinity,
+          "RMSE": Infinity
+        }
+      }
+    },
+    "best_window": 21,
+    "best_model_at_best_window": "ESN",
+    "best_rmse": 0.2983876348624294
+  },
+  {
+    "phase": "Phase 3: Multivariate Features",
+    "changes": "Added lagged values (1,2,3,5), rolling mean/std (3,7), first/second differences",
+    "results": {
+      "ESN (multivariate)": {
+        "MAE": 0.2093484600759063,
+        "RMSE": 0.2995004433235722
+      },
+      "MLP (multivariate)": {
+        "MAE": 0.36324491045995794,
+        "RMSE": 0.47148558296841847
+      }
+    },
+    "best_model": "ESN (multivariate)",
+    "best_mae": 0.2093484600759063,
+    "best_rmse": 0.2995004433235722
+  },
+  {
+    "phase": "Phase 4: Ensemble Methods",
+    "changes": "Weighted averaging and stacking of ESN+GPR (+Transformer)",
+    "results": {
+      "ESN+GPR (50:50)": {
+        "MAE": 0.20980766484728655,
+        "RMSE": 0.3022265811091208
+      },
+      "ESN+GPR (40:60)": {
+        "MAE": 0.20926627927074626,
+        "RMSE": 0.3017149902489495
+      },
+      "ESN+GPR (60:40)": {
+        "MAE": 0.21063329032449768,
+        "RMSE": 0.30294595624427756
+      },
+      "ESN+GPR (stacking)": {
+        "MAE": 0.3923062927115308,
+        "RMSE": 0.5708572914318724
+      },
+      "ESN+GPR+Trans (40:40:20)": {
+        "MAE": 0.21041858528954552,
+        "RMSE": 0.30142249654007874
+      }
+    },
+    "best_model": "ESN+GPR+Trans (40:40:20)",
+    "best_mae": 0.21041858528954552,
+    "best_rmse": 0.30142249654007874
+  },
+  {
+    "phase": "Phase 5: Walk-Forward Validation",
+    "changes": "5-fold time-series cross-validation (rolling origin)",
+    "results": {
+      "ESN": {
+        "MAE": 0.8046762375794466,
+        "RMSE": 0.9962268329667006
+      },
+      "RF": {
+        "MAE": 0.9775775641025645,
+        "RMSE": 1.2306888000879306
+      }
+    }
+  }
+]

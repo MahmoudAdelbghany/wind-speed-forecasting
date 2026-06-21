@@ -1,0 +1,19 @@
+Model Evaluation (Original Data):
+Model                     | MAE        | RMSE      
+--------------------------------------------------
+Random Forest             | 0.3525     | 0.4725    
+SVR                       | 0.3913     | 0.6251    
+Reservoir Computing       | 0.2163     | 0.3079    
+Gaussian Process          | 0.2105     | 0.3018    
+MLP                       | 0.5815     | 0.8379    
+LSTM                      | 0.4058     | 0.4965    
+Transformer               | 0.2832     | 0.3583    
+PINN                      | 0.2669     | 0.3584    
+
+
+Robustness Test (Gaussian Noise) for Best Model: Gaussian Process
+Noise Level     | MAE        | RMSE       | Degradation 
+-------------------------------------------------------
+5%             | 0.2166     | 0.3078     | ~2.0%
+10%             | 0.2220     | 0.3119     | ~3.4%
+20%             | 0.2580     | 0.3412     | ~13.1%
