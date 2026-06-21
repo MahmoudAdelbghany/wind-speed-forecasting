@@ -1,6 +1,6 @@
 # Wind Speed Time-Series Forecasting
 
-A comprehensive benchmark of 8 machine learning and deep learning models for wind speed prediction, with systematic improvement testing and full results history.
+A comprehensive benchmark of 8 machine learning and deep learning models for wind speed prediction, with systematic improvement testing, full EDA, and results history.
 
 ## Results Summary
 
@@ -30,18 +30,63 @@ Phase 3 (lagged+rolling): ESN RMSE = 0.2995 (-5.3%)
 Phase 4 (ESN+GPR+Trans): RMSE = 0.3014     (-4.7%)
 ```
 
+## Exploratory Data Analysis
+
+### Dataset Characteristics
+
+| Metric | Value |
+|---|---|
+| Observations | 5,000 |
+| Mean | 8.3936 m/s |
+| Std Dev | 3.7342 m/s |
+| Min / Max | 0.00 / 18.70 m/s |
+| Skewness | -0.5353 (left-skewed) |
+| Kurtosis | -0.8403 (platykurtic) |
+| Missing values | 0 |
+| Outliers (IQR) | 0 (0.00%) |
+
+### Key EDA Findings
+
+1. **Non-stationary**: ADF test p=0.27 (original), p≈0 (differenced). Series requires differencing for stationarity.
+
+2. **Non-normal distribution**: Shapiro-Wilk p≈0, D'Agostino p≈0. Distribution is left-skewed with lighter tails than Gaussian (Q-Q plot shows deviation at both extremes).
+
+3. **Strong autocorrelation**: ACF remains >0.8 even at lag 100. PACF shows significant spikes at lags 1-5, indicating strong short-term dependencies. This explains why ESN (which captures temporal dynamics) outperforms feed-forward models.
+
+4. **Dominant periods (FFT)**: Periods at 2500, 5000, 1667, 714, and 1250 steps. The cumulative periodogram shows most power at low frequencies (long trends).
+
+5. **Window size correlation**: Even at lag 28, autocorrelation remains >0.91. This justifies using window sizes up to 21-28 for the ESN model.
+
+6. **Lag-1 plot**: Tight linear relationship (r=0.97) confirms high serial correlation — next value is highly predictable from current value.
+
+### EDA Visualizations
+
+| Plot | Description |
+|---|---|
+| `eda_01_distribution.png` | Histogram, Q-Q plot, box plot, ECDF with normal/log-normal fits |
+| `eda_02_timeseries.png` | Full series, rolling statistics (mean±2σ), first differences |
+| `eda_03_autocorrelation.png` | ACF, PACF, differenced ACF, lag-1 scatter plot |
+| `eda_04_spectral.png` | Periodogram (FFT) and cumulative periodogram |
+| `eda_05_window_analysis.png` | Autocorrelation decay for window sizes 7, 14, 21, 28 |
+
 ## Project Structure
 
 ```
 nileuni/
-├── forecasting.py          # Main model training and evaluation
-├── test_improvements.py    # Comprehensive improvement testing script
-├── Forecasting_Report.md   # Full report with history and analysis
-├── improvement_history.json # Machine-readable results for all phases
-├── results_table.txt       # Model evaluation and robustness results
-├── actual_vs_predicted.png # Best model prediction plot
-├── WindSpeed.csv           # Dataset (5000 wind speed measurements)
-└── Research Assessment.pdf # Original assessment document
+├── forecasting.py              # Main model training and evaluation
+├── test_improvements.py        # Comprehensive improvement testing script
+├── eda.py                      # Exploratory data analysis script
+├── Forecasting_Report.md       # Full report with history and analysis
+├── improvement_history.json    # Machine-readable results for all phases
+├── results_table.txt           # Model evaluation and robustness results
+├── actual_vs_predicted.png     # Best model prediction plot
+├── eda_01_distribution.png     # Distribution analysis plots
+├── eda_02_timeseries.png       # Time series overview plots
+├── eda_03_autocorrelation.png  # Autocorrelation analysis plots
+├── eda_04_spectral.png         # Spectral analysis plots
+├── eda_05_window_analysis.png  # Window size analysis plots
+├── WindSpeed.csv               # Dataset (5000 wind speed measurements)
+└── Research Assessment.pdf     # Original assessment document
 ```
 
 ## Models Implemented
@@ -73,7 +118,10 @@ nileuni/
 
 ```bash
 # Install dependencies
-pip install pandas numpy scikit-learn torch matplotlib
+pip install pandas numpy scikit-learn torch matplotlib statsmodels scipy
+
+# Run EDA
+python eda.py
 
 # Run main forecasting pipeline
 python forecasting.py
