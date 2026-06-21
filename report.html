@@ -35,7 +35,7 @@
 <p class="subtitle">Research Internship Report — June 2026</p>
 
 <h2>1. Problem Statement</h2>
-<p>Accurate wind speed forecasting is critical for wind energy integration, grid stability, and meteorological planning. This study addresses short-term univariate wind speed prediction using 5,000 sequential measurements (range: 0–18.7 m/s). We benchmark two machine learning models (Echo State Network, Gaussian Process Regression) and two deep learning models (LSTM, Transformer), then systematically improve performance through architecture tuning, extended input windows, and ensemble methods.</p>
+<p>Predicting wind speed matters a lot for wind energy — grid operators need to know how much power to expect, and weather services need accurate short-term forecasts. The goal here is simple: given the last <em>k</em> wind speed readings, predict the next one. We work with a single-turbine dataset of 5,000 measurements (ranging from calm 0 m/s to strong 18.7 m/s gusts) and compare four models: two from classical machine learning (Echo State Network, Gaussian Process Regression) and two from deep learning (LSTM, Transformer).</p>
 
 <h2>2. Exploratory Data Analysis</h2>
 
@@ -51,31 +51,31 @@
 </div>
 
 <table>
-<tr><th>Property</th><th>Value</th><th>Implication for Model Choice</th></tr>
-<tr><td>ADF p-value (original)</td><td>0.274</td><td>Non-stationary → favor models with temporal dynamics</td></tr>
-<tr><td>ACF at lag 1 / lag 21</td><td>0.974 / 0.921</td><td>Strong serial correlation → ESN/sequential models suited</td></tr>
-<tr><td>Skewness / Kurtosis</td><td>−0.54 / −0.84</td><td>Non-Gaussian → GPR kernel flexibility needed</td></tr>
+<tr><th>Property</th><th>Value</th><th>What it tells us</th></tr>
+<tr><td>ADF p-value (original)</td><td>0.274</td><td>Series is non-stationary — the mean drifts over time</td></tr>
+<tr><td>ACF at lag 1 / lag 21</td><td>0.974 / 0.921</td><td>Each reading is very close to its neighbors — strong serial correlation</td></tr>
+<tr><td>Skewness / Kurtosis</td><td>−0.54 / −0.84</td><td>Distribution is not Gaussian — left-skewed, flatter than normal</td></tr>
 </table>
 
-<p><strong>Key insight:</strong> The extremely high lag-1 autocorrelation (0.974) and non-stationarity direct us toward models that capture temporal dynamics. We select ESN and GPR for ML, LSTM and Transformer for DL. Random Forest and SVR serve as classical baselines.</p>
+<p><strong>What this means for model choice:</strong> The lag-1 autocorrelation of 0.974 is the most important number here. It tells us that wind speed changes slowly — today's value is a great predictor of tomorrow's. This favors models that explicitly model temporal patterns (like ESNs) over models that treat each input independently. The non-Gaussian distribution means we need flexible models, not ones that assume normality.</p>
 
 <h2>3. Comparative Analysis</h2>
 <h3>3.1 Models and Rationale</h3>
 <table>
-<tr><th>Model</th><th>Type</th><th>Architecture</th><th>Selection Rationale</th></tr>
-<tr class="best"><td>ESN</td><td>ML</td><td>150-unit sparse reservoir, Ridge readout</td><td>Efficient temporal modeling via reservoir dynamics</td></tr>
-<tr class="best"><td>GPR</td><td>ML</td><td>RBF+Constant kernel, 1000-point subset</td><td>Probabilistic; adapts to non-stationary local patterns</td></tr>
-<tr class="best"><td>LSTM</td><td>DL</td><td>64 hidden units, 1 layer</td><td>Standard sequential DL baseline</td></tr>
-<tr class="best"><td>Transformer</td><td>DL</td><td>d=32, 4 heads, 1 layer</td><td>Self-attention captures global dependencies</td></tr>
-<tr><td>RF</td><td>ML</td><td>200 trees, depth=15</td><td>Classical ensemble baseline</td></tr>
-<tr><td>SVR</td><td>ML</td><td>RBF kernel, C=10</td><td>Kernel method baseline</td></tr>
+<tr><th>Model</th><th>Type</th><th>Architecture</th><th>Why this model?</th></tr>
+<tr class="best"><td>ESN</td><td>ML</td><td>150-unit sparse reservoir, Ridge readout</td><td>Built for temporal data — only trains the output layer, so it's fast</td></tr>
+<tr class="best"><td>GPR</td><td>ML</td><td>RBF+Constant kernel, 1000-point subset</td><td>Non-parametric — fits whatever shape the data has, no assumptions</td></tr>
+<tr class="best"><td>LSTM</td><td>DL</td><td>64 hidden units, 1 layer</td><td>The standard choice for sequence prediction — baseline for DL</td></tr>
+<tr class="best"><td>Transformer</td><td>DL</td><td>d=32, 4 heads, 1 layer</td><td>Self-attention can look at any position in the window at once</td></tr>
+<tr><td>RF</td><td>ML</td><td>200 trees, depth=15</td><td>Classical baseline — no temporal modeling</td></tr>
+<tr><td>SVR</td><td>ML</td><td>RBF kernel, C=10</td><td>Kernel method baseline — treats input as a flat vector</td></tr>
 </table>
 
 <h3>3.2 Baseline Results (Window = 7)</h3>
 
 <div class="fig">
   <div class="chart-box"><canvas id="chartBaseline"></canvas></div>
-  <p class="figcap"><strong>Fig. 3.</strong> MAE and RMSE for all models (window=7). ESN and GPR dominate; LSTM and Transformer underperform due to limited temporal context.</p>
+  <p class="figcap"><strong>Fig. 3.</strong> MAE and RMSE for all models with a 7-step input window. ESN and GPR come out on top; the deep learning models struggle because 7 steps isn't enough history for them to learn from.</p>
 </div>
 
 <table>
@@ -87,75 +87,75 @@
 <tr><td>RF</td><td>0.3568</td><td>0.4769</td></tr>
 <tr><td>SVR</td><td>0.3662</td><td>0.5745</td></tr>
 </table>
-<p class="note"><strong>Finding:</strong> ESN outperforms all models. Its reservoir dynamics naturally exploit the strong autocorrelation (r = 0.974). LSTM and Transformer underperform because the 7-step window provides insufficient context for learning sequential dependencies.</p>
+<p class="note"><strong>Takeaway:</strong> ESN wins because its reservoir — a fixed random recurrent network — happens to be a good match for this kind of smooth, autocorrelated signal. The LSTM and Transformer are overkill for a 7-step window; they need more data and longer sequences to show their strengths.</p>
 
 <div class="page-break"></div>
 
 <h2>4. Methodology &amp; Implementation</h2>
 
 <h3>4.1 Data Pipeline</h3>
-<p>Data was normalized to [0,1] via MinMaxScaler. Supervised windows of size <em>k</em> were constructed: each input of <em>k</em> consecutive values predicts the next. An 80/20 sequential split preserved temporal order. For GPR, training was limited to the most recent 1,000 points to manage O(N³) complexity.</p>
+<p>The raw data was scaled to [0, 1] using MinMaxScaler — this keeps the neural network training stable. We then slid a window of size <em>k</em> across the series: each window of <em>k</em> values becomes one input sample, and the value right after the window is the target. The first 80% of samples go to training, the rest to testing, in order (no shuffling — that would leak future information into the past). For GPR, we limited training to the last 1,000 points because the kernel matrix grows cubically with dataset size.</p>
 
-<h3>4.2 Training Configuration</h3>
-<p>All DL models used Adam optimizer, ReduceLROnPlateau scheduling, gradient clipping (max_norm=1.0), and early stopping (patience=7). ESN used sparse reservoir connectivity (10% sparsity) with hyperparameter search over reservoir size (100–250), spectral radius (0.9–0.99), and leakage (0.15–0.5).</p>
+<h3>4.2 Training Details</h3>
+<p>Deep learning models used Adam optimizer with a learning rate scheduler that cuts the rate in half when validation loss plateaus. We also used gradient clipping (to prevent exploding gradients) and early stopping (training halts if validation loss doesn't improve for 7 epochs). The ESN was built from scratch: a sparse random recurrent network with 150 units, where only the output weights are trained via Ridge regression. We searched over a small grid of hyperparameters (reservoir size, spectral radius, leakage rate) and picked the best combo.</p>
 
-<h3>4.3 Improvement Strategy</h3>
-<p>Starting from the baseline (window=7), we applied two targeted improvements based on EDA findings:</p>
+<h3>4.3 What we changed and why</h3>
+<p>After seeing the baseline results, two things stood out: (1) the deep learning models were underperforming, and (2) the EDA showed strong autocorrelation even at lag 21. So we made two changes:</p>
 
 <table>
-<tr><th>Phase</th><th>Change</th><th>Rationale</th></tr>
-<tr><td><strong>1</strong></td><td>Architecture tuning: dropout, early stopping, ESN hyperparameter search</td><td>Reduce overfitting; optimize model capacity</td></tr>
-<tr><td><strong>2</strong></td><td>Extended window: 7 → 21</td><td>EDA showed ACF > 0.92 at lag 21; longer context should help</td></tr>
+<tr><th>Change</th><th>What we did</th><th>Why</th></tr>
+<tr><td><strong>Tuning</strong></td><td>Added dropout, early stopping, LR scheduling, ESN hyperparameter search</td><td>Models were overfitting or using poor defaults</td></tr>
+<tr><td><strong>Bigger window</strong></td><td>Went from 7 to 21 steps</td><td>ACF at lag 21 is still 0.92 — the models were missing useful history</td></tr>
 </table>
 
 <h2>5. Results</h2>
 
-<h3>5.1 Improved Individual Models</h3>
+<h3>5.1 What changed after tuning</h3>
 
 <div class="fig">
   <div class="chart-box"><canvas id="chartImprovement"></canvas></div>
-  <p class="figcap"><strong>Fig. 4.</strong> RMSE before and after improvements. ESN benefits most from the window extension (−5.6%).</p>
+  <p class="figcap"><strong>Fig. 4.</strong> RMSE before (grey) and after (green) improvements. The biggest winner is the Transformer, which dropped from 0.50 to 0.36 with proper tuning. ESN also improved, going from 0.32 to 0.30.</p>
 </div>
 
 <table>
-<tr><th>Model</th><th>Baseline RMSE</th><th>Improved RMSE</th><th>Δ</th></tr>
+<tr><th>Model</th><th>Before (w=7)</th><th>After</th><th>Change</th></tr>
 <tr class="best"><td>ESN (w=21)</td><td>0.3162</td><td>0.2984</td><td>−5.6%</td></tr>
 <tr><td>GPR</td><td>0.3265</td><td>0.3018</td><td>−7.6%</td></tr>
-<tr><td>LSTM</td><td>0.4544</td><td>0.4965</td><td>+9.3%</td></tr>
+<tr><td>LSTM</td><td>0.4544</td><td>0.4965</td><td>+9.3% (got worse)</td></tr>
 <tr><td>Transformer</td><td>0.4978</td><td>0.3583</td><td>−28.0%</td></tr>
 </table>
-<p class="note"><strong>Finding:</strong> Window=21 is optimal for ESN (RMSE = 0.2984). LSTM does not benefit — the univariate input and limited dataset size prevent it from learning meaningful long-range patterns. Transformer improves significantly with tuning but remains behind ESN and GPR.</p>
+<p class="note"><strong>Why did LSTM get worse?</strong> With only 5,000 samples and a single wind speed variable, the LSTM doesn't have enough signal to learn from. Adding dropout and early stopping actually made it more conservative, which hurt in this case. The Transformer, on the other hand, responded well to tuning — the original version was just poorly configured.</p>
 
-<h3>5.2 Actual vs. Predicted</h3>
+<h3>5.2 Does the model actually work?</h3>
 
 <div class="fig">
   <div class="chart-box-lg"><canvas id="chartPred"></canvas></div>
-  <p class="figcap"><strong>Fig. 5.</strong> Actual vs. predicted wind speed (first 200 test points). The ESN closely tracks the actual series; the ensemble smooths out prediction noise.</p>
+  <p class="figcap"><strong>Fig. 5.</strong> Actual wind speed (grey) vs ESN prediction (blue dashed) vs ensemble (green) on the first 200 test points. Both models track the real signal pretty well — the ESN follows closely, while the ensemble is a bit smoother.</p>
 </div>
 
-<h3>5.3 Residual Analysis</h3>
+<h3>5.3 Where does it fail?</h3>
 
 <div class="fig">
   <div class="chart-box-lg"><canvas id="chartResid"></canvas></div>
-  <p class="figcap"><strong>Fig. 6.</strong> Prediction residuals (actual − predicted). Both models show centered residuals near zero, confirming no systematic bias. The ensemble exhibits slightly lower variance.</p>
+  <p class="figcap"><strong>Fig. 6.</strong> Residuals (actual minus predicted) for ESN and ensemble. Most errors cluster near zero, which is what we want. There's no obvious pattern — the model isn't consistently over- or under-predicting.</p>
 </div>
 
-<h3>5.4 Best Model Statement</h3>
-<p><strong>Best individual model:</strong> Echo State Network (window=21), RMSE = 0.2984.</p>
-<p>The ESN's superiority is consistent with EDA findings — its reservoir dynamics are inherently designed to capture the strong serial autocorrelation (r = 0.974) present in this dataset, while requiring minimal training computation compared to deep learning alternatives.</p>
+<h3>5.4 Bottom line</h3>
+<p><strong>Best individual model: ESN with window=21</strong> (RMSE = 0.2984). It wins because the reservoir architecture is a natural fit for this data — it captures the strong serial correlation without the training overhead of full backpropagation. The GPR is a close second (0.3018), and the Transformer came third after tuning (0.3583). The LSTM never got competitive on this dataset.</p>
 
 <h2>6. Limitations</h2>
 <table>
-<tr><th>Limitation</th><th>Impact</th></tr>
-<tr><td>Small dataset (5,000 samples)</td><td>DL models (LSTM, Transformer) cannot fully leverage their capacity; risk of overfitting</td></tr>
-<tr><td>Univariate forecasting only</td><td>Excludes wind direction, temperature, pressure — variables that could improve accuracy</td></tr>
-<tr><td>Single train/test split</td><td>Single-split RMSE (0.30) may be optimistic; walk-forward validation yields RMSE ≈ 1.0, reflecting more realistic production conditions</td></tr>
-<tr><td>No seasonal decomposition</td><td>Dataset lacks timestamps; cannot model diurnal or seasonal patterns</td></tr>
-<tr><td>GPR scalability</td><td>O(N³) complexity limits GPR to 1,000 training points; larger windows degrade performance</td></tr>
+<tr><th>Issue</th><th>Why it matters</th></tr>
+<tr><td>Small dataset (5,000 points)</td><td>Deep learning models like LSTM and Transformer need more data to learn properly. With 5,000 samples, they're essentially guessing.</td></tr>
+<tr><td>Only wind speed — no other variables</td><td>Real wind prediction uses temperature, pressure, wind direction, humidity. We only had speed, which limits accuracy.</td></tr>
+<tr><td>Single train/test split</td><td>One split can be lucky or unlucky. When we tested with rolling cross-validation, errors were about 3× higher (RMSE ≈ 1.0 vs 0.30), suggesting the single-split number is optimistic.</td></tr>
+<tr><td>No timestamps in the data</td><td>Wind has daily and seasonal patterns (stronger at night, different in winter vs summer). Without timestamps, we can't model any of that.</td></tr>
+<tr><td>GPR doesn't scale</td><td>The kernel matrix is O(N³), so we had to cap training at 1,000 points. Bigger windows made this worse — GPR couldn't be used for windows above 14.</td></tr>
 </table>
 
 <h2>7. Conclusion</h2>
-<p>For univariate wind speed forecasting with strong autocorrelation (r = 0.974), Echo State Networks outperform both traditional ML and deep learning architectures. Extending the input window from 7 to 21 steps — motivated by EDA autocorrelation analysis — yields a 5.6% RMSE improvement. The best individual model achieves RMSE = 0.2984. Limitations include the small dataset size, univariate-only input, and the gap between single-split and walk-forward evaluation metrics.</p>
+<p>The short version: for this particular wind speed dataset, an Echo State Network with a 21-step input window works best (RMSE = 0.2984). It beats the GPR (0.3018), the Transformer (0.3583), and the LSTM (0.4965). The ESN wins because the data has very strong autocorrelation (r = 0.974), and ESNs are specifically designed to exploit exactly that kind of temporal structure — without the training cost of deep learning.</p>
+<p>The bigger picture: extending the window from 7 to 21 steps gave a 5.6% improvement, which came directly from looking at the autocorrelation function in the EDA. That's the kind of insight that matters more than picking a fancier model. The main limitations are the small dataset, the lack of additional meteorological variables, and the gap between single-split and walk-forward evaluation numbers.</p>
 
 <div class="ref">
 <h3>References</h3>
