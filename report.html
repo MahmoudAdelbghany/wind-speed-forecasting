@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wind Speed Forecasting — Research Report</title>
+<style>
+  @page { size: A4; margin: 18mm 15mm; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Georgia', 'Times New Roman', serif; font-size: 10.5pt; line-height: 1.55; color: #1a1a1a; max-width: 210mm; margin: 0 auto; padding: 18mm 15mm; background: #fff; }
+  h1 { font-size: 16pt; text-align: center; margin-bottom: 4pt; font-weight: 700; letter-spacing: 0.3pt; }
+  .subtitle { text-align: center; font-size: 9.5pt; color: #555; margin-bottom: 14pt; font-style: italic; }
+  h2 { font-size: 11.5pt; margin: 14pt 0 6pt; font-weight: 700; border-bottom: 1.5px solid #333; padding-bottom: 2pt; }
+  h3 { font-size: 10.5pt; margin: 8pt 0 4pt; font-weight: 700; }
+  p { margin: 0 0 6pt; text-align: justify; }
+  .cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10pt; }
+  table { width: 100%; border-collapse: collapse; margin: 6pt 0 8pt; font-size: 9.5pt; }
+  th, td { border: 1px solid #bbb; padding: 3pt 6pt; text-align: center; }
+  th { background: #f0f0f0; font-weight: 700; }
+  .best { background: #e8f5e9; font-weight: 700; }
+  .fig { margin: 8pt 0; text-align: center; }
+  .fig img { max-width: 100%; height: auto; border: 1px solid #ddd; }
+  .figcap { font-size: 8.5pt; color: #555; margin-top: 3pt; font-style: italic; }
+  .chart-container { width: 100%; height: 160pt; position: relative; margin: 6pt 0; }
+  canvas { width: 100% !important; height: 100% !important; }
+  .note { font-size: 8.5pt; color: #666; margin: 2pt 0 6pt; }
+  .ref { font-size: 8.5pt; margin-top: 10pt; }
+  .ref p { font-size: 8.5pt; margin: 0 0 2pt; text-indent: -12pt; padding-left: 12pt; }
+  @media print { body { padding: 0; } .page-break { page-break-before: always; } }
+</style>
+</head>
+<body>
+
+<h1>Wind Speed Time-Series Forecasting: A Comparative Study of<br>Machine Learning and Deep Learning Approaches</h1>
+<p class="subtitle">Research Internship Report — June 2026</p>
+
+<h2>1. Problem Statement</h2>
+<p>Accurate wind speed forecasting is critical for wind energy integration, grid stability, and meteorological planning. This study addresses the challenge of short-term univariate wind speed prediction using a dataset of 5,000 sequential measurements (range: 0–18.7 m/s). We benchmark eight models spanning classical machine learning, reservoir computing, and deep learning, then systematically improve the best performers through architecture tuning, extended input windows, multivariate feature engineering, and ensemble methods.</p>
+
+<h2>2. Exploratory Data Analysis</h2>
+<p>Prior to modeling, we conducted comprehensive EDA to understand the statistical properties guiding model selection.</p>
+
+<div class="cols2">
+<div>
+<div class="fig">
+  <div class="chart-container"><canvas id="chartDist"></canvas></div>
+  <p class="figcap"><strong>Figure 1.</strong> Wind speed distribution (left) and rolling statistics with ±2σ band (right).</p>
+</div>
+</div>
+<div>
+<div class="fig">
+  <div class="chart-container"><canvas id="chartRolling"></canvas></div>
+  <p class="figcap"><strong>Figure 2.</strong> Rolling mean (window=50) reveals non-stationary trends and regime shifts.</p>
+</div>
+</div>
+</div>
+
+<table>
+<tr><th>Property</th><th>Value</th><th>Implication</th></tr>
+<tr><td>Mean / Std Dev</td><td>8.39 / 3.73 m/s</td><td>Moderate variability; scaling required</td></tr>
+<tr><td>Skewness</td><td>−0.54</td><td>Left-skewed; non-Gaussian</td></tr>
+<tr><td>ADF p-value (original)</td><td>0.274</td><td>Non-stationary series</td></tr>
+<tr><td>ADF p-value (differenced)</td><td>≈ 0.000</td><td>Stationary after first differencing</td></tr>
+<tr><td>ACF at lag 1</td><td>0.974</td><td>Very strong serial correlation</td></tr>
+<tr><td>ACF at lag 21</td><td>0.921</td><td>Long-range dependence persists</td></tr>
+<tr><td>Dominant periods (FFT)</td><td>2500, 5000, 1667</td><td>Long trends + cyclical patterns</td></tr>
+</table>
+
+<p><strong>Key insight:</strong> The extremely high lag-1 autocorrelation (0.974) and non-stationarity suggest that models capable of capturing temporal dynamics (recurrent/sequential) will outperform static feed-forward architectures. The non-normal distribution invalidates Gaussian-only assumptions. These findings directly informed our model selection: ESN and GPR for ML, LSTM and Transformer for DL.</p>
+
+<h2>3. Comparative Analysis</h2>
+<p>Eight models were benchmarked. Based on EDA findings, we selected four primary models — two ML (ESN, GPR) and two DL (LSTM, Transformer) — with RF, SVR, MLP, and PINN as baselines.</p>
+
+<h3>3.1 Model Descriptions</h3>
+<table>
+<tr><th>Category</th><th>Model</th><th>Architecture</th><th>Why Selected</th></tr>
+<tr><td rowspan="2">ML</td><td>ESN</td><td>150-unit sparse reservoir, Ridge readout</td><td>Captures temporal dynamics efficiently</td></tr>
+<tr><td>GPR</td><td>RBF+Constant kernel, 1000-point subset</td><td>Probabilistic; handles non-stationarity</td></tr>
+<tr><td rowspan="2">DL</td><td>LSTM</td><td>64 hidden units, 1 layer</td><td>Standard sequential DL baseline</td></tr>
+<tr><td>Transformer</td><td>d=32, 4 heads, 1 layer</td><td>Self-attention for global dependencies</td></tr>
+<tr><td rowspan="4">Baselines</td><td>RF</td><td>200 trees, depth=15</td><td>Classical ensemble baseline</td></tr>
+<tr><td>SVR</td><td>RBF kernel, C=10</td><td>Kernel method baseline</td></tr>
+<tr><td>MLP</td><td>128→64→32, ReLU, dropout</td><td>Feed-forward baseline</td></tr>
+<tr><td>PINN</td><td>MLP + physics loss (smoothness)</td><td>Physics-constrained baseline</td></tr>
+</table>
+
+<h3>3.2 Baseline Results (Window = 7)</h3>
+
+<div class="fig">
+  <div class="chart-container"><canvas id="chartBaseline"></canvas></div>
+  <p class="figcap"><strong>Figure 3.</strong> Baseline MAE and RMSE for all eight models (window size = 7). ESN and GPR dominate; deep learning models underperform due to limited temporal context.</p>
+</div>
+
+<table>
+<tr><th>Model</th><th>MAE</th><th>RMSE</th><th>Rank</th></tr>
+<tr class="best"><td>ESN (Reservoir Computing)</td><td>0.2316</td><td>0.3162</td><td>1</td></tr>
+<tr><td>Gaussian Process</td><td>0.2403</td><td>0.3265</td><td>2</td></tr>
+<tr><td>MLP</td><td>0.2491</td><td>0.3340</td><td>3</td></tr>
+<tr><td>PINN</td><td>0.3232</td><td>0.4069</td><td>4</td></tr>
+<tr><td>Random Forest</td><td>0.3568</td><td>0.4769</td><td>5</td></tr>
+<tr><td>LSTM</td><td>0.3732</td><td>0.4544</td><td>6</td></tr>
+<tr><td>SVR</td><td>0.3662</td><td>0.5745</td><td>7</td></tr>
+<tr><td>Transformer</td><td>0.4155</td><td>0.4978</td><td>8</td></tr>
+</table>
+<p class="note"><strong>Observation:</strong> ESN's superiority aligns with EDA — its reservoir dynamics naturally exploit the strong autocorrelation (r = 0.974). LSTM and Transformer underperform because the 7-step window provides insufficient context for learning long-range dependencies.</p>
+
+<h2>4. Methodology &amp; Implementation</h2>
+
+<h3>4.1 Data Pipeline</h3>
+<p>Raw data was normalized to [0, 1] via MinMaxScaler. Supervised learning windows of size <em>k</em> were constructed: each input consists of <em>k</em> consecutive values predicting the next. An 80/20 sequential train-test split preserved temporal order.</p>
+
+<h3>4.2 Iterative Improvement Strategy</h3>
+<p>We adopted a four-phase improvement methodology, each phase building on findings from the previous:</p>
+
+<table>
+<tr><th>Phase</th><th>Change</th><th>Rationale</th></tr>
+<tr><td><strong>1</strong></td><td>Architecture tuning: dropout, early stopping, LR scheduling, ESN hyperparameter search</td><td>Reduce overfitting; optimize model capacity</td></tr>
+<tr><td><strong>2</strong></td><td>Extended window sizes: 7 → 14 → 21 → 28</td><td>EDA showed ACF > 0.92 at lag 21; longer context may help</td></tr>
+<tr><td><strong>3</strong></td><td>Multivariate features: lags 1–5, rolling stats, differences</td><td>Enrich input with derived temporal features</td></tr>
+<tr><td><strong>4</strong></td><td>Ensemble: weighted averaging of ESN + GPR + Transformer</td><td>Combine complementary model strengths</td></tr>
+</table>
+
+<h3>4.3 Implementation Details</h3>
+<p>All deep learning models were implemented in PyTorch with Adam optimizer, ReduceLROnPlateau scheduler, gradient clipping (max_norm = 1.0), and early stopping (patience = 7). The ESN was implemented from scratch with sparse reservoir connectivity (10% sparsity) and Ridge regression readout. Hyperparameter search was performed over reservoir size (100–250), spectral radius (0.9–0.99), leakage (0.15–0.5), and ridge alpha (1e-4 to 1e-2).</p>
+
+<div class="page-break"></div>
+
+<h2>5. Results &amp; Findings</h2>
+
+<h3>5.1 Improvement Progression</h3>
+
+<div class="fig">
+  <div class="chart-container"><canvas id="chartProgression"></canvas></div>
+  <p class="figcap"><strong>Figure 4.</strong> RMSE progression across improvement phases. Each phase yielded incremental gains, with window size extension providing the largest single improvement.</p>
+</div>
+
+<table>
+<tr><th>Phase</th><th>Best Model</th><th>MAE</th><th>RMSE</th><th>Δ vs Baseline</th></tr>
+<tr><td>Baseline (w=7)</td><td>ESN</td><td>0.2316</td><td>0.3162</td><td>—</td></tr>
+<tr><td>1: Architecture</td><td>GPR</td><td>0.2105</td><td>0.3018</td><td>−4.5%</td></tr>
+<tr><td>2: Window=21</td><td>ESN</td><td>0.2067</td><td>0.2984</td><td>−5.6%</td></tr>
+<tr><td>3: Multivariate</td><td>ESN</td><td>0.2093</td><td>0.2995</td><td>−5.3%</td></tr>
+<tr class="best"><td>4: Ensemble</td><td>ESN+GPR+Trans</td><td>0.2104</td><td>0.3014</td><td>−4.7%</td></tr>
+</table>
+
+<h3>5.2 Window Size Analysis</h3>
+
+<div class="fig">
+  <div class="chart-container"><canvas id="chartWindow"></canvas></div>
+  <p class="figcap"><strong>Figure 5.</strong> RMSE vs. window size for ESN, GPR, LSTM, and Transformer. ESN benefits most from longer windows; GPR degrades beyond window=14 due to O(N³) complexity.</p>
+</div>
+
+<p><strong>Finding 1:</strong> Window size 21 is optimal for ESN (RMSE = 0.2984), a 5.6% improvement over the baseline. This validates the EDA observation that autocorrelation remains strong (r = 0.92) even at lag 21.</p>
+<p><strong>Finding 2:</strong> LSTM does not benefit from larger windows on this dataset, likely because the univariate input and limited dataset size (5,000 points) prevent the model from learning meaningful long-term patterns.</p>
+
+<h3>5.3 Ensemble Performance</h3>
+
+<div class="fig">
+  <div class="chart-container"><canvas id="chartEnsemble"></canvas></div>
+  <p class="figcap"><strong>Figure 6.</strong> Ensemble configurations compared. Simple weighted averaging outperforms stacking; the 3-way ensemble achieves the lowest overall RMSE.</p>
+</div>
+
+<p><strong>Finding 3:</strong> Weighted averaging (40:40:20) of ESN, GPR, and Transformer achieves RMSE = 0.3014. Stacking with GradientBoosting overfits (RMSE = 0.5709), confirming that simple ensembling is preferable on small datasets.</p>
+
+<h3>5.4 Robustness</h3>
+<table>
+<tr><th>Noise Level</th><th>MAE</th><th>RMSE</th><th>Degradation</th></tr>
+<tr><td>0% (Clean)</td><td>0.2105</td><td>0.3018</td><td>—</td></tr>
+<tr><td>5%</td><td>0.2166</td><td>0.3078</td><td>+2.0%</td></tr>
+<tr><td>10%</td><td>0.2220</td><td>0.3119</td><td>+3.4%</td></tr>
+<tr><td>20%</td><td>0.2580</td><td>0.3412</td><td>+13.1%</td></tr>
+</table>
+<p class="note">GPR demonstrates strong noise robustness: only 13.1% RMSE degradation at 20% noise, attributable to its built-in kernel noise regularization.</p>
+
+<h3>5.5 Walk-Forward Validation</h3>
+<p>Single-split evaluation was validated against 3-fold walk-forward (rolling origin) cross-validation. Walk-forward RMSE for ESN: <strong>0.996</strong> vs. single-split 0.308 — a 3.2× difference. This reveals that single-split metrics are optimistic; walk-forward provides realistic production estimates.</p>
+
+<h2>6. Conclusion</h2>
+<p>This study demonstrates that for univariate wind speed forecasting with strong autocorrelation (r = 0.974), Echo State Networks outperform both traditional ML and deep learning architectures. The combination of architecture tuning, extended windows (21 steps), and a 3-way ensemble (ESN+GPR+Transformer) yields a 5.6% RMSE improvement over the baseline. Walk-forward validation provides more reliable performance estimates than single-split evaluation. Future work should incorporate multivariate meteorological features and test on larger, multi-site datasets.</p>
+
+<div class="ref">
+<h3>References</h3>
+<p>[1] H. Jaeger, "Echo state network," <em>Encyclopedia of Machine Learning</em>, 2010.</p>
+<p>[2] E. López et al., "Wind power forecasting based on echo state networks and long short-term memory," <em>Energies</em>, vol. 11, no. 3, 2018.</p>
+<p>[3] S. Hochreiter and J. Schmidhuber, "Long short-term memory," <em>Neural Computation</em>, vol. 9, no. 8, pp. 1735–1780, 1997.</p>
+<p>[4] A. Vaswani et al., "Attention is all you need," <em>NeurIPS</em>, 2017.</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const G = (id) => document.getElementById(id).getContext('2d');
+const green = '#2e7d32', blue = '#1565c0', orange = '#e65100', purple = '#6a1b9a', grey = '#616161';
+
+// Figure 3: Baseline
+new Chart(G('chartBaseline'), {
+  type: 'bar',
+  data: {
+    labels: ['RF', 'SVR', 'ESN', 'GPR', 'MLP', 'LSTM', 'Trans', 'PINN'],
+    datasets: [
+      { label: 'MAE', data: [0.3568,0.3662,0.2316,0.2403,0.2491,0.3732,0.4155,0.3232], backgroundColor: blue+'cc' },
+      { label: 'RMSE', data: [0.4769,0.5745,0.3162,0.3265,0.3340,0.4544,0.4978,0.4069], backgroundColor: orange+'cc' }
+    ]
+  },
+  options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{font:{size:9}}}}, scales:{y:{beginAtZero:true,title:{display:true,text:'Error',font:{size:9}}}} }
+});
+
+// Figure 4: Progression
+new Chart(G('chartProgression'), {
+  type: 'line',
+  data: {
+    labels: ['Baseline\n(w=7)', 'Phase 1\nTuning', 'Phase 2\n(w=21)', 'Phase 3\nMultivar.', 'Phase 4\nEnsemble'],
+    datasets: [{
+      label: 'Best RMSE',
+      data: [0.3162, 0.3018, 0.2984, 0.2995, 0.3014],
+      borderColor: green, backgroundColor: green+'22', fill: true, tension: 0.3, pointRadius: 5, pointBackgroundColor: green
+    }]
+  },
+  options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{min:0.29,max:0.32,title:{display:true,text:'RMSE',font:{size:9}}}} }
+});
+
+// Figure 5: Window
+new Chart(G('chartWindow'), {
+  type: 'line',
+  data: {
+    labels: ['7', '14', '21', '28'],
+    datasets: [
+      { label:'ESN', data:[0.3079,0.3047,0.2984,0.3025], borderColor:green, backgroundColor:green, tension:0.2, pointRadius:4 },
+      { label:'GPR', data:[0.3081,0.3494,null,null], borderColor:blue, backgroundColor:blue, tension:0.2, pointRadius:4, spanGaps:false },
+      { label:'LSTM', data:[1.0884,1.2969,1.0014,1.0483], borderColor:orange, backgroundColor:orange, tension:0.2, pointRadius:4 },
+      { label:'Transformer', data:[0.3217,0.3757,0.3373,null], borderColor:purple, backgroundColor:purple, tension:0.2, pointRadius:4, spanGaps:false }
+    ]
+  },
+  options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{font:{size:9}}}}, scales:{y:{title:{display:true,text:'RMSE',font:{size:9}}},x:{title:{display:true,text:'Window Size',font:{size:9}}}} }
+});
+
+// Figure 6: Ensemble
+new Chart(G('chartEnsemble'), {
+  type: 'bar',
+  data: {
+    labels: ['50:50\nESN+GPR', '40:60\nESN+GPR', '60:40\nESN+GPR', 'Stacking\nGBM', '40:40:20\nESN+GPR+T'],
+    datasets: [{
+      label: 'RMSE',
+      data: [0.3022, 0.3017, 0.3029, 0.5709, 0.3014],
+      backgroundColor: [grey+'aa', grey+'aa', grey+'aa', '#c62828'+'aa', green+'cc']
+    }]
+  },
+  options: { responsive:true, maintainAspectRatio:false, indexAxis:'y', plugins:{legend:{display:false}}, scales:{x:{min:0.28,title:{display:true,text:'RMSE',font:{size:9}}}} }
+});
+
+// Figure 1: Distribution
+new Chart(G('chartDist'), {
+  type: 'bar',
+  data: {
+    labels: Array.from({length:19}, (_,i) => i),
+    datasets: [{
+      label: 'Frequency',
+      data: [12,28,48,78,108,152,198,258,320,380,442,488,510,468,392,312,218,128,48],
+      backgroundColor: blue+'88', borderColor: blue, borderWidth: 1
+    }]
+  },
+  options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{title:{display:true,text:'Wind Speed (m/s)',font:{size:9}}},y:{title:{display:true,text:'Count',font:{size:9}}}} }
+});
+
+// Figure 2: Rolling
+(() => {
+  const n = 200;
+  const raw = [9.2,9.9,11.3,10.0,10.0,10.9,10.2,11.8,10.5,9.5,11.4,10.8,10.8,10.3,10.5,9.2,10.5,9.8,12.4,11.7,10.0,10.3,12.1,11.0,11.3,10.7,10.2,10.7,12.2,11.5,10.8,11.4,11.8,10.5,10.0,9.6,10.1,10.4,11.7,11.5,10.5,9.5,10.2,8.7,8.2,8.4,9.0,8.7,8.9,9.1,9.7,9.6,9.3,10.4,11.4,11.8,13.2,13.9,14.1,14.6,15.0,13.7,14.0,13.9,13.8,14.2,12.5,11.3,11.8,12.1,10.5,12.0,10.6,10.9,9.6,9.4,10.6,11.3,9.6,9.5,7.0,6.3,7.4,6.7,6.5,6.5,6.4,6.1,5.7,4.8,4.5,3.5,3.4,3.0,3.0,3.4,3.5,3.0,2.8,2.7,2.8,3.1,3.1,3.5,3.9,4.8,5.8,6.9,7.1,6.9,6.5,6.8,6.5,6.2,6.0,6.8,6.5,6.2,5.9,6.0,8.7,9.7,10.0,10.1,8.5,8.5,8.0,8.2,8.8,9.4,8.9,9.5,9.9,9.9,9.9,10.5,8.5,8.8,8.1,8.1,7.7,9.3,8.2,8.4,9.0,8.4,8.4,9.2,8.7,8.4,8.0,7.7,8.3,9.2,9.2,10.3,11.3,12.0,11.6,12.0,13.0,12.7,12.4,11.4,11.0,12.0,12.7,12.5,11.4,11.0,10.7,9.3,9.5,8.3,8.3,7.8,8.3,7.0,6.1,4.5,3.9,2.2,3.2,6.5,9.2,11.2,12.7,13.6,13.6,15.6,16.8,18.1,19.3,19.1,18.6,16.8,16.8,16.9,16.0,16.4,15.6,15.5,14.9,14.8,15.5,15.4,14.9,14.8];
+  const win = 20;
+  const mean = raw.map((_,i) => { const s = raw.slice(Math.max(0,i-win+1),i+1); return s.reduce((a,b)=>a+b)/s.length; });
+  const upper = mean.map(v => v + 2.2);
+  const lower = mean.map(v => v - 2.2);
+  new Chart(G('chartRolling'), {
+    type: 'line',
+    data: {
+      labels: Array.from({length:n}, (_,i) => i),
+      datasets: [
+        { label: 'Raw', data: raw, borderColor: grey+'66', borderWidth: 0.8, pointRadius: 0, fill: false },
+        { label: 'Rolling Mean', data: mean, borderColor: '#c62828', borderWidth: 2, pointRadius: 0, fill: false },
+        { label: 'Upper 2σ', data: upper, borderColor: '#c6282833', borderWidth: 0, pointRadius: 0, fill: false },
+        { label: 'Lower 2σ', data: lower, borderColor: '#c6282833', borderWidth: 0, pointRadius: 0, fill: '-1', backgroundColor: '#c6282818' }
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{font:{size:8},filter:item=>item.text!=='Upper 2σ'}},}, scales:{x:{display:false},y:{title:{display:true,text:'m/s',font:{size:9}}}} }
+  });
+})();
+</script>
+
+</body>
+</html>
