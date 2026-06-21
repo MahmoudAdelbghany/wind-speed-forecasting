@@ -3,39 +3,39 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wind Speed Forecasting — Research Report</title>
+<title>Wind Speed Forecasting; Research Assessment</title>
 <style>
-  @page { size: A4; margin: 16mm 14mm; }
+  @page { size: A4; margin: 12mm 12mm; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Georgia', 'Times New Roman', serif; font-size: 10pt; line-height: 1.5; color: #1a1a1a; max-width: 210mm; margin: 0 auto; padding: 16mm 14mm; background: #fff; }
-  h1 { font-size: 14pt; text-align: center; margin-bottom: 3pt; font-weight: 700; }
-  .subtitle { text-align: center; font-size: 9pt; color: #555; margin-bottom: 10pt; font-style: italic; }
-  h2 { font-size: 10.5pt; margin: 10pt 0 4pt; font-weight: 700; border-bottom: 1px solid #333; padding-bottom: 1pt; }
-  h3 { font-size: 10pt; margin: 6pt 0 3pt; font-weight: 700; }
-  p { margin: 0 0 5pt; text-align: justify; }
-  table { width: 100%; border-collapse: collapse; margin: 4pt 0 6pt; font-size: 9pt; }
-  th, td { border: 1px solid #bbb; padding: 2pt 5pt; text-align: center; }
+  body { font-family: 'Georgia', 'Times New Roman', serif; font-size: 9.5pt; line-height: 1.45; color: #1a1a1a; max-width: 210mm; margin: 0 auto; padding: 12mm 12mm; background: #fff; }
+  h1 { font-size: 13pt; text-align: center; margin-bottom: 2pt; font-weight: 700; }
+  .subtitle { text-align: center; font-size: 8.5pt; color: #555; margin-bottom: 8pt; font-style: italic; }
+  h2 { font-size: 10pt; margin: 8pt 0 3pt; font-weight: 700; border-bottom: 1px solid #333; padding-bottom: 1pt; }
+  h3 { font-size: 9.5pt; margin: 5pt 0 2pt; font-weight: 700; }
+  p { margin: 0 0 4pt; text-align: justify; }
+  table { width: 100%; border-collapse: collapse; margin: 3pt 0 5pt; font-size: 8.5pt; }
+  th, td { border: 1px solid #bbb; padding: 2pt 4pt; text-align: center; }
   th { background: #f0f0f0; font-weight: 700; }
   .best { background: #e8f5e9; font-weight: 700; }
-  .fig { margin: 6pt 0; text-align: center; }
-  .figcap { font-size: 8pt; color: #555; margin-top: 2pt; font-style: italic; }
-  .chart-box { width: 100%; height: 130pt; position: relative; }
-  .chart-box-lg { width: 100%; height: 110pt; position: relative; }
+  .fig { margin: 4pt 0; text-align: center; }
+  .figcap { font-size: 7.5pt; color: #555; margin-top: 1pt; font-style: italic; }
+  .chart-box { width: 100%; height: 110pt; position: relative; }
+  .chart-box-lg { width: 100%; height: 95pt; position: relative; }
   canvas { width: 100% !important; height: 100% !important; }
-  .note { font-size: 8pt; color: #666; margin: 1pt 0 4pt; }
-  .cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8pt; }
-  .ref { font-size: 8pt; margin-top: 6pt; }
-  .ref p { font-size: 8pt; margin: 0 0 1pt; text-indent: -10pt; padding-left: 10pt; }
+  .note { font-size: 7.5pt; color: #666; margin: 1pt 0 3pt; }
+  .cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6pt; }
+  .ref { font-size: 7.5pt; margin-top: 4pt; }
+  .ref p { font-size: 7.5pt; margin: 0 0 1pt; text-indent: -8pt; padding-left: 8pt; }
   @media print { body { padding: 0; } .page-break { page-break-before: always; } }
 </style>
 </head>
 <body>
 
-<h1>Wind Speed Time-Series Forecasting: A Comparative Study of<br>Machine Learning and Deep Learning Approaches</h1>
-<p class="subtitle">Research Internship Report — June 2026</p>
+<h1>Wind Speed Time-Series Forecasting: A Comparative Study of Machine Learning and Deep Learning Approaches</h1>
+<p class="subtitle">Research Internship Assessment; June 2026</p>
 
 <h2>1. Problem Statement</h2>
-<p>Predicting wind speed matters a lot for wind energy — grid operators need to know how much power to expect, and weather services need accurate short-term forecasts. The goal here is simple: given the last <em>k</em> wind speed readings, predict the next one. We work with a single-turbine dataset of 5,000 measurements (ranging from calm 0 m/s to strong 18.7 m/s gusts) and compare four models: two from classical machine learning (Echo State Network, Gaussian Process Regression) and two from deep learning (LSTM, Transformer).</p>
+<p>Predicting wind speed matters a lot for wind energy; grid operators need to know how much power to expect, and weather services need accurate short-term forecasts. The goal here is simple: given the last <em>k</em> wind speed readings, predict the next one. We work with a single-turbine dataset of 5,000 measurements (ranging from calm 0 m/s to strong 18.7 m/s gusts) and compare four models: two from classical machine learning (Echo State Network, Gaussian Process Regression) and two from deep learning (LSTM, Transformer).</p>
 
 <h2>2. Exploratory Data Analysis</h2>
 
@@ -52,23 +52,23 @@
 
 <table>
 <tr><th>Property</th><th>Value</th><th>What it tells us</th></tr>
-<tr><td>ADF p-value (original)</td><td>0.274</td><td>Series is non-stationary — the mean drifts over time</td></tr>
-<tr><td>ACF at lag 1 / lag 21</td><td>0.974 / 0.921</td><td>Each reading is very close to its neighbors — strong serial correlation</td></tr>
-<tr><td>Skewness / Kurtosis</td><td>−0.54 / −0.84</td><td>Distribution is not Gaussian — left-skewed, flatter than normal</td></tr>
+<tr><td>ADF p-value (original)</td><td>0.274</td><td>Series is non-stationary; the mean drifts over time</td></tr>
+<tr><td>ACF at lag 1 / lag 21</td><td>0.974 / 0.921</td><td>Each reading is very close to its neighbors; strong serial correlation</td></tr>
+<tr><td>Skewness / Kurtosis</td><td>−0.54 / −0.84</td><td>Distribution is not Gaussian; left-skewed, flatter than normal</td></tr>
 </table>
 
-<p><strong>What this means for model choice:</strong> The lag-1 autocorrelation of 0.974 is the most important number here. It tells us that wind speed changes slowly — today's value is a great predictor of tomorrow's. This favors models that explicitly model temporal patterns (like ESNs) over models that treat each input independently. The non-Gaussian distribution means we need flexible models, not ones that assume normality.</p>
+<p><strong>What this means for model choice:</strong> The lag-1 autocorrelation of 0.974 is the most important number here. It tells us that wind speed changes slowly; today's value is a great predictor of tomorrow's. This favors models that explicitly model temporal patterns (like ESNs) over models that treat each input independently. The non-Gaussian distribution means we need flexible models, not ones that assume normality.</p>
 
 <h2>3. Comparative Analysis</h2>
 <h3>3.1 Models and Rationale</h3>
 <table>
 <tr><th>Model</th><th>Type</th><th>Architecture</th><th>Why this model?</th></tr>
-<tr class="best"><td>ESN</td><td>ML</td><td>150-unit sparse reservoir, Ridge readout</td><td>Built for temporal data — only trains the output layer, so it's fast</td></tr>
-<tr class="best"><td>GPR</td><td>ML</td><td>RBF+Constant kernel, 1000-point subset</td><td>Non-parametric — fits whatever shape the data has, no assumptions</td></tr>
-<tr class="best"><td>LSTM</td><td>DL</td><td>64 hidden units, 1 layer</td><td>The standard choice for sequence prediction — baseline for DL</td></tr>
+<tr class="best"><td>ESN</td><td>ML</td><td>150-unit sparse reservoir, Ridge readout</td><td>Built for temporal data; only trains the output layer, so it's fast</td></tr>
+<tr class="best"><td>GPR</td><td>ML</td><td>RBF+Constant kernel, 1000-point subset</td><td>Non-parametric; fits whatever shape the data has, no assumptions</td></tr>
+<tr class="best"><td>LSTM</td><td>DL</td><td>64 hidden units, 1 layer</td><td>The standard choice for sequence prediction; baseline for DL</td></tr>
 <tr class="best"><td>Transformer</td><td>DL</td><td>d=32, 4 heads, 1 layer</td><td>Self-attention can look at any position in the window at once</td></tr>
-<tr><td>RF</td><td>ML</td><td>200 trees, depth=15</td><td>Classical baseline — no temporal modeling</td></tr>
-<tr><td>SVR</td><td>ML</td><td>RBF kernel, C=10</td><td>Kernel method baseline — treats input as a flat vector</td></tr>
+<tr><td>RF</td><td>ML</td><td>200 trees, depth=15</td><td>Classical baseline; no temporal modeling</td></tr>
+<tr><td>SVR</td><td>ML</td><td>RBF kernel, C=10</td><td>Kernel method baseline; treats input as a flat vector</td></tr>
 </table>
 
 <h3>3.2 Baseline Results (Window = 7)</h3>
@@ -87,14 +87,14 @@
 <tr><td>RF</td><td>0.3568</td><td>0.4769</td></tr>
 <tr><td>SVR</td><td>0.3662</td><td>0.5745</td></tr>
 </table>
-<p class="note"><strong>Takeaway:</strong> ESN wins because its reservoir — a fixed random recurrent network — happens to be a good match for this kind of smooth, autocorrelated signal. The LSTM and Transformer are overkill for a 7-step window; they need more data and longer sequences to show their strengths.</p>
+<p class="note"><strong>Takeaway:</strong> ESN wins because its reservoir; a fixed random recurrent network; happens to be a good match for this kind of smooth, autocorrelated signal. The LSTM and Transformer are overkill for a 7-step window; they need more data and longer sequences to show their strengths.</p>
 
 <div class="page-break"></div>
 
 <h2>4. Methodology &amp; Implementation</h2>
 
 <h3>4.1 Data Pipeline</h3>
-<p>The raw data was scaled to [0, 1] using MinMaxScaler — this keeps the neural network training stable. We then slid a window of size <em>k</em> across the series: each window of <em>k</em> values becomes one input sample, and the value right after the window is the target. The first 80% of samples go to training, the rest to testing, in order (no shuffling — that would leak future information into the past). For GPR, we limited training to the last 1,000 points because the kernel matrix grows cubically with dataset size.</p>
+<p>The raw data was scaled to [0, 1] using MinMaxScaler; this keeps the neural network training stable. We then slid a window of size <em>k</em> across the series: each window of <em>k</em> values becomes one input sample, and the value right after the window is the target. The first 80% of samples go to training, the rest to testing, in order (no shuffling; that would leak future information into the past). For GPR, we limited training to the last 1,000 points because the kernel matrix grows cubically with dataset size.</p>
 
 <h3>4.2 Training Details</h3>
 <p>Deep learning models used Adam optimizer with a learning rate scheduler that cuts the rate in half when validation loss plateaus. We also used gradient clipping (to prevent exploding gradients) and early stopping (training halts if validation loss doesn't improve for 7 epochs). The ESN was built from scratch: a sparse random recurrent network with 150 units, where only the output weights are trained via Ridge regression. We searched over a small grid of hyperparameters (reservoir size, spectral radius, leakage rate) and picked the best combo.</p>
@@ -105,7 +105,7 @@
 <table>
 <tr><th>Change</th><th>What we did</th><th>Why</th></tr>
 <tr><td><strong>Tuning</strong></td><td>Added dropout, early stopping, LR scheduling, ESN hyperparameter search</td><td>Models were overfitting or using poor defaults</td></tr>
-<tr><td><strong>Bigger window</strong></td><td>Went from 7 to 21 steps</td><td>ACF at lag 21 is still 0.92 — the models were missing useful history</td></tr>
+<tr><td><strong>Bigger window</strong></td><td>Went from 7 to 21 steps</td><td>ACF at lag 21 is still 0.92; the models were missing useful history</td></tr>
 </table>
 
 <h2>5. Results</h2>
@@ -124,49 +124,49 @@
 <tr><td>LSTM</td><td>0.4544</td><td>0.4965</td><td>+9.3% (got worse)</td></tr>
 <tr><td>Transformer</td><td>0.4978</td><td>0.3583</td><td>−28.0%</td></tr>
 </table>
-<p class="note"><strong>Why did LSTM get worse?</strong> With only 5,000 samples and a single wind speed variable, the LSTM doesn't have enough signal to learn from. Adding dropout and early stopping actually made it more conservative, which hurt in this case. The Transformer, on the other hand, responded well to tuning — the original version was just poorly configured.</p>
+<p class="note"><strong>Why did LSTM get worse?</strong> With only 5,000 samples and a single wind speed variable, the LSTM doesn't have enough signal to learn from. Adding dropout and early stopping actually made it more conservative, which hurt in this case. The Transformer, on the other hand, responded well to tuning; the original version was just poorly configured.</p>
 
 <h3>5.2 Does the model actually work?</h3>
 
 <div class="fig">
   <div class="chart-box-lg"><canvas id="chartPred"></canvas></div>
-  <p class="figcap"><strong>Fig. 5.</strong> Actual wind speed (grey) vs ESN prediction (blue dashed) on the first 200 test points. The ESN follows the real signal closely — it picks up both the trends and the short-term fluctuations.</p>
+  <p class="figcap"><strong>Fig. 5.</strong> Actual wind speed (grey) vs ESN prediction (blue dashed) on the first 200 test points. The ESN follows the real signal closely; it picks up both the trends and the short-term fluctuations.</p>
 </div>
 
 <h3>5.3 Where does it fail?</h3>
 
 <div class="fig">
   <div class="chart-box-lg"><canvas id="chartResid"></canvas></div>
-  <p class="figcap"><strong>Fig. 6.</strong> Prediction residuals (actual minus ESN). Most errors sit near zero, with a spread of roughly ±0.3 m/s. No systematic pattern — the model isn't consistently biased in one direction.</p>
+  <p class="figcap"><strong>Fig. 6.</strong> Prediction residuals (actual minus ESN). Most errors sit near zero, with a spread of roughly ±0.3 m/s. No systematic pattern; the model isn't consistently biased in one direction.</p>
 </div>
 
 <h3>5.4 Bottom line</h3>
-<p><strong>Best individual model: ESN with window=21</strong> (RMSE = 0.2984). It wins because the reservoir architecture is a natural fit for this data — it captures the strong serial correlation without the training overhead of full backpropagation. The GPR is a close second (0.3018), and the Transformer came third after tuning (0.3583). The LSTM never got competitive on this dataset.</p>
+<p><strong>Best individual model: ESN with window=21</strong> (RMSE = 0.2984). It wins because the reservoir architecture is a natural fit for this data; it captures the strong serial correlation without the training overhead of full backpropagation. The GPR is a close second (0.3018), and the Transformer came third after tuning (0.3583). The LSTM never got competitive on this dataset.</p>
 
 <h3>5.5 Noise robustness</h3>
 <p>To check whether the ESN holds up under realistic sensor noise, we injected Gaussian noise at three levels into the test set and re-evaluated:</p>
 
 <table>
 <tr><th>Noise added</th><th>MAE</th><th>RMSE</th><th>Degradation vs clean</th></tr>
-<tr><td>0% (clean)</td><td>0.2163</td><td>0.3079</td><td>—</td></tr>
+<tr><td>0% (clean)</td><td>0.2163</td><td>0.3079</td><td></td></tr>
 <tr><td>5%</td><td>0.2182</td><td>0.3101</td><td>+0.7%</td></tr>
 <tr><td>10%</td><td>0.2247</td><td>0.3184</td><td>+3.4%</td></tr>
 <tr><td>20%</td><td>0.2478</td><td>0.3495</td><td>+13.5%</td></tr>
 </table>
-<p class="note">The ESN handles noise reasonably well — at 10% noise (a realistic level for real sensors), RMSE only goes up by 3.4%. At 20% noise, the degradation is more noticeable (13.5%), but the model still produces usable predictions. This suggests the reservoir's random projections act as a natural noise filter.</p>
+<p class="note">The ESN handles noise reasonably well; at 10% noise (a realistic level for real sensors), RMSE only goes up by 3.4%. At 20% noise, the degradation is more noticeable (13.5%), but the model still produces usable predictions. This suggests the reservoir's random projections act as a natural noise filter.</p>
 
 <h2>6. Limitations</h2>
 <table>
 <tr><th>Issue</th><th>Why it matters</th></tr>
 <tr><td>Small dataset (5,000 points)</td><td>Deep learning models like LSTM and Transformer need more data to work well. With 5,000 samples, the dataset is likely too small for these architectures to reach their potential.</td></tr>
-<tr><td>Only wind speed — no other variables</td><td>Real wind prediction uses temperature, pressure, wind direction, humidity. We only had speed, which limits accuracy.</td></tr>
-<tr><td>Single train/test split</td><td>One split can be lucky or unlucky. Walk-forward cross-validation (testing on later periods, training on earlier ones) gave RMSE ≈ 1.0 — about 3× higher — because early folds have much less training data.</td></tr>
+<tr><td>Only wind speed; no other variables</td><td>Real wind prediction uses temperature, pressure, wind direction, humidity. We only had speed, which limits accuracy.</td></tr>
+<tr><td>Single train/test split</td><td>One split can be lucky or unlucky. Walk-forward cross-validation (testing on later periods, training on earlier ones) gave RMSE ≈ 1.0; about 3× higher; because early folds have much less training data.</td></tr>
 <tr><td>No timestamps in the data</td><td>Wind has daily and seasonal patterns (stronger at night, different in winter vs summer). Without timestamps, we can't model any of that.</td></tr>
-<tr><td>GPR doesn't scale</td><td>The kernel matrix is O(N³), so we had to cap training at 1,000 points. Bigger windows made this worse — GPR couldn't be used for windows above 14.</td></tr>
+<tr><td>GPR doesn't scale</td><td>The kernel matrix is O(N³), so we had to cap training at 1,000 points. Bigger windows made this worse; GPR couldn't be used for windows above 14.</td></tr>
 </table>
 
 <h2>7. Conclusion</h2>
-<p>The short version: for this particular wind speed dataset, an Echo State Network with a 21-step input window works best (RMSE = 0.2984). It beats the GPR (0.3018), the Transformer (0.3583), and the LSTM (0.4965). The ESN wins because the data has very strong autocorrelation (r = 0.974), and ESNs are specifically designed to exploit exactly that kind of temporal structure — without the training cost of deep learning.</p>
+<p>The short version: for this particular wind speed dataset, an Echo State Network with a 21-step input window works best (RMSE = 0.2984). It beats the GPR (0.3018), the Transformer (0.3583), and the LSTM (0.4965). The ESN wins because the data has very strong autocorrelation (r = 0.974), and ESNs are specifically designed to exploit exactly that kind of temporal structure; without the training cost of deep learning.</p>
 <p>The bigger picture: extending the window from 7 to 21 steps gave a 5.6% improvement, which came directly from looking at the autocorrelation function in the EDA. That's the kind of insight that matters more than picking a fancier model. The main limitations are the small dataset, the lack of additional meteorological variables, and the gap between single-split and walk-forward evaluation numbers.</p>
 
 <div class="ref">
